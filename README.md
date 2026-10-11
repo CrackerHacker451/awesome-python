@@ -86,20 +86,20 @@ An opinionated guide to the best Python frameworks, libraries, and tools.
 - [CLI Tools](#cli-tools)
 - [GUI Development](#gui-development)
 
-**Text & Documents**
+**:Text & Documents**
 
 - [Text Processing](#text-processing)
 - [HTML Manipulation](#html-manipulation)
 - [File Format Processing](#file-format-processing)
 - [File Manipulation](#file-manipulation)
 
-**Media**
+**:Media**
 
 - [Image Processing](#image-processing)
 - [Audio & Video Processing](#audio--video-processing)
 - [Game Development](#game-development)
 
-**Python Language**
+**:Python Language**
 
 - [Implementations](#implementations)
 - [Built-in Classes Enhancement](#built-in-classes-enhancement)
@@ -107,7 +107,7 @@ An opinionated guide to the best Python frameworks, libraries, and tools.
 - [Asynchronous Programming](#asynchronous-programming)
 - [Date and Time](#date-and-time)
 
-**Python Toolchain**
+**:Python Toolchain**
 
 - [Environment Management](#environment-management)
 - [Package Management](#package-management)
@@ -115,14 +115,14 @@ An opinionated guide to the best Python frameworks, libraries, and tools.
 - [Distribution](#distribution)
 - [Configuration Files](#configuration-files)
 
-**Security**
+**:Security**
 
 - [Cryptography](#cryptography)
 - [Penetration Testing](#penetration-testing)
 - [Supply Chain Security](#supply-chain-security)
 - [Web Security](#web-security)
 
-**Other**
+**:Other**
 
 - [Hardware](#hardware)
 - [Microsoft Windows](#microsoft-windows)
