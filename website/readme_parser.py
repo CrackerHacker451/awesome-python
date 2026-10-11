@@ -12,7 +12,7 @@ into llms.txt; the build's "Total entries" figure counts sub-items
 from __future__ import annotations
 
 import re
-from typing import TypedDict
+from typing import Optional, TypedDict
 
 from markdown_it import MarkdownIt
 from markdown_it.tree import SyntaxTreeNode
@@ -76,29 +76,28 @@ def _render_inline(children: list[SyntaxTreeNode], *, html: bool) -> str:
     """Render inline AST nodes to HTML or plain text."""
     parts: list[str] = []
     for child in children:
-        match child.type:
-            case "text":
-                parts.append(str(escape(child.content)) if html else child.content)
-            case "html_inline":
-                if html:
-                    parts.append(str(escape(child.content)))
-            case "softbreak":
-                parts.append(" ")
-            case "code_inline":
-                parts.append(f"<code>{escape(child.content)}</code>" if html else child.content)
-            case "link":
-                inner = _render_inline(child.children, html=html)
-                if html:
-                    href = str(escape(_href(child)))
-                    parts.append(f'<a href="{href}" target="_blank" rel="noopener">{inner}</a>')
-                else:
-                    parts.append(inner)
-            case "em":
-                inner = _render_inline(child.children, html=html)
-                parts.append(f"<em>{inner}</em>" if html else inner)
-            case "strong":
-                inner = _render_inline(child.children, html=html)
-                parts.append(f"<strong>{inner}</strong>" if html else inner)
+        if child.type == "text":
+            parts.append(str(escape(child.content)) if html else child.content)
+        elif child.type == "html_inline":
+            if html:
+                parts.append(str(escape(child.content)))
+        elif child.type == "softbreak":
+            parts.append(" ")
+        elif child.type == "code_inline":
+            parts.append(f"<code>{escape(child.content)}</code>" if html else child.content)
+        elif child.type == "link":
+            inner = _render_inline(child.children, html=html)
+            if html:
+                href = str(escape(_href(child)))
+                parts.append(f'<a href="{href}" target="_blank" rel="noopener">{inner}</a>')
+            else:
+                parts.append(inner)
+        elif child.type == "em":
+            inner = _render_inline(child.children, html=html)
+            parts.append(f"<em>{inner}</em>" if html else inner)
+        elif child.type == "strong":
+            inner = _render_inline(child.children, html=html)
+            parts.append(f"<strong>{inner}</strong>" if html else inner)
     return "".join(parts)
 
 
@@ -123,7 +122,7 @@ def _heading_text(node: SyntaxTreeNode) -> str:
     return ""
 
 
-def _heading_level(node: SyntaxTreeNode) -> int | None:
+def _heading_level(node: SyntaxTreeNode) -> Optional[int]:
     """Return the numeric level for a heading node."""
     if node.type != "heading" or not node.tag.startswith("h"):
         return None
@@ -154,7 +153,7 @@ _DESC_SEP_RE = re.compile(r"^\s*[-\u2013\u2014]\s*")
 _SUBCAT_TRAILING_RE = re.compile(r"[\s,\-\u2013\u2014]+(also\s+see\s*)?$", re.IGNORECASE)
 
 
-def _find_child(node: SyntaxTreeNode, child_type: str) -> SyntaxTreeNode | None:
+def _find_child(node: SyntaxTreeNode, child_type: str) -> Optional[SyntaxTreeNode]:
     """Find first direct child of a given type."""
     for child in node.children:
         if child.type == child_type:
@@ -168,7 +167,7 @@ def _href(link: SyntaxTreeNode) -> str:
     return href if isinstance(href, str) else ""
 
 
-def _find_inline(node: SyntaxTreeNode) -> SyntaxTreeNode | None:
+def _find_inline(node: SyntaxTreeNode) -> Optional[SyntaxTreeNode]:
     """Find the inline node in a list_item's paragraph."""
     para = _find_child(node, "paragraph")
     if para is None:
@@ -295,7 +294,7 @@ def _build_section(name: str, body: list[SyntaxTreeNode]) -> ParsedSection:
     )
 
 
-def _is_bold_marker(node: SyntaxTreeNode) -> str | None:
+def _is_bold_marker(node: SyntaxTreeNode) -> Optional[str]:
     """Detect a bold-only paragraph used as a group marker.
 
     Pattern: a paragraph whose only content is **Group Name** (possibly
@@ -324,9 +323,9 @@ def _parse_grouped_sections(
     any bold marker go into an "Other" group.
     """
     groups: list[ParsedGroup] = []
-    current_group_name: str | None = None
+    current_group_name: Optional[str] = None
     current_group_cats: list[ParsedSection] = []
-    current_cat_name: str | None = None
+    current_cat_name: Optional[str] = None
     current_cat_body: list[SyntaxTreeNode] = []
 
     def flush_cat() -> None:
@@ -372,7 +371,7 @@ def _parse_grouped_sections(
 _SPONSOR_SEP_RE = re.compile(r"^\s*[:\-\u2013\u2014]\s*")
 
 
-def _find_link_deep(node: SyntaxTreeNode) -> SyntaxTreeNode | None:
+def _find_link_deep(node: SyntaxTreeNode) -> Optional[SyntaxTreeNode]:
     """Find the first link anywhere in the subtree (including nested in strong/em)."""
     for child in node.children:
         if child.type == "link":
@@ -383,7 +382,7 @@ def _find_link_deep(node: SyntaxTreeNode) -> SyntaxTreeNode | None:
     return None
 
 
-def _parse_sponsor_item(inline: SyntaxTreeNode) -> ParsedSponsor | None:
+def _parse_sponsor_item(inline: SyntaxTreeNode) -> Optional[ParsedSponsor]:
     """Parse `**[name](url)**: description` (or `[name](url) - description`)."""
     for split_idx, child in enumerate(inline.children):
         link = child if child.type == "link" else _find_link_deep(child)

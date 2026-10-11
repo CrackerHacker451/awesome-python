@@ -8,9 +8,11 @@ import subprocess
 import xml.etree.ElementTree as ET
 from collections import Counter
 from collections.abc import Sequence
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import TypedDict
+from typing import Optional, TypedDict, Union
+
+UTC = timezone.utc
 
 from jinja2 import Environment, FileSystemLoader
 from markdown_it import MarkdownIt
@@ -60,13 +62,13 @@ class TemplateEntry(TypedDict):
     categories: list[str]
     groups: list[str]
     subcategories: list[TemplateSubcategory]
-    stars: int | None
-    downloads: int | None
-    owner: str | None
-    last_commit_at: str | None
-    source_type: str | None
+    stars: Optional[int]
+    downloads: Optional[int]
+    owner: Optional[str]
+    last_commit_at: Optional[str]
+    source_type: Optional[str]
     bundled: bool
-    badge: str | None
+    badge: Optional[str]
     also_see: list[AlsoSee]
 
 
@@ -85,10 +87,10 @@ class SyntheticCategory(TypedDict):
     description_html: str
 
 
-TemplateCategory = ParsedSection | SyntheticCategory
+TemplateCategory = Union[ParsedSection, SyntheticCategory]
 
 
-def detect_source_type(url: str) -> str | None:
+def detect_source_type(url: str) -> Optional[str]:
     """Detect source type from URL domain. Returns None for GitHub URLs."""
     if GITHUB_REPO_URL_RE.match(url):
         return None
@@ -100,7 +102,7 @@ def detect_source_type(url: str) -> str | None:
     return None
 
 
-def extract_github_repo(url: str) -> str | None:
+def extract_github_repo(url: str) -> Optional[str]:
     """Extract owner/repo from a GitHub repo URL. Returns None for non-GitHub URLs."""
     m = GITHUB_REPO_URL_RE.match(url)
     return m.group(1) if m else None
@@ -225,7 +227,7 @@ def build_homepage_json_ld(entries: Sequence[TemplateEntry], total_categories: i
     }
 
 
-def category_meta_title(name: str, parent_name: str | None = None) -> str:
+def category_meta_title(name: str, parent_name: Optional[str] = None) -> str:
     if parent_name:
         # Lead with the section's title so the page matches searches like "python jwt library".
         title = f"{category_meta_title(parent_name).removesuffix(' - Awesome Python')}: {name}"
@@ -435,7 +437,7 @@ def write_sitemap_xml(path: Path, urls: Sequence[tuple[str, str]]) -> None:
         f.write(b"\n")
 
 
-def top_level_heading_text(line: str) -> str | None:
+def top_level_heading_text(line: str) -> Optional[str]:
     stripped = line.strip()
     match = re.match(r"^(#{1,2})\s+(.+)$", stripped)
     if match is None:
@@ -769,8 +771,8 @@ def build(repo_root: Path) -> None:
         entries: Sequence[TemplateEntry],
         current_path: str,
         page_dir: Path,
-        parent_category: ParsedSection | None = None,
-        group_categories: Sequence[ParsedSection] | None = None,
+        parent_category: Optional[ParsedSection] = None,
+        group_categories: Optional[Sequence[ParsedSection]] = None,
         entry_groups: Sequence[EntryGroup] = (),
     ) -> None:
         page_dir.mkdir(parents=True, exist_ok=True)
