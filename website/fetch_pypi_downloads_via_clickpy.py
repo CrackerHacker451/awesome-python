@@ -33,8 +33,11 @@ Usage: python fetch_pypi_downloads_via_clickpy.py
 
 import json
 import re
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
+from typing import Optional
+
+UTC = timezone.utc
 
 import httpx
 
@@ -54,7 +57,7 @@ def normalize(name: str) -> str:
     return re.sub(r"[-_.]+", "-", name.lower())
 
 
-def load_overrides() -> dict[str, str | None]:
+def load_overrides() -> dict[str, Optional[str]]:
     """Load curated overrides: normalized README name -> PyPI package to measure (None = never query).
 
     Each file entry is {"package": str | null, "reason": str | null} plus an
@@ -66,7 +69,7 @@ def load_overrides() -> dict[str, str | None]:
     return {name: entry["package"] for name, entry in raw.items()}
 
 
-def resolve(name: str) -> str | None:
+def resolve(name: str) -> Optional[str]:
     """Map a README display name to the PyPI package to measure. None = not pip-installable."""
     normalized = normalize(name)
     return load_overrides().get(normalized, normalized)

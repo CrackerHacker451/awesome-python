@@ -11,9 +11,22 @@ import os
 import re
 import sys
 from collections.abc import Sequence
-from datetime import UTC, datetime, timedelta
-from itertools import batched
+from datetime import datetime, timedelta, timezone
+from itertools import islice
 from pathlib import Path
+
+UTC = timezone.utc
+
+try:
+    from itertools import batched
+except ImportError:  # Python < 3.12
+    def batched(iterable, n):
+        it = iter(iterable)
+        while True:
+            batch = tuple(islice(it, n))
+            if not batch:
+                return
+            yield batch
 
 import httpx
 

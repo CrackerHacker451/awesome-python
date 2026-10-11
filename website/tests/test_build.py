@@ -10,6 +10,7 @@ import xml.etree.ElementTree as ET
 from datetime import UTC, date, datetime
 from html.parser import HTMLParser
 from pathlib import Path
+from typing import Optional
 
 import pytest
 
@@ -1314,7 +1315,7 @@ class TestLoadPypiBadges:
         assert "tomllib" not in badges
 
 
-def _template_entry(name: str, stars: int | None, source_type: str | None = None) -> TemplateEntry:
+def _template_entry(name: str, stars: Optional[int], source_type: Optional[str] = None) -> TemplateEntry:
     return TemplateEntry(
         name=name,
         url="",
